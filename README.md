@@ -2,11 +2,11 @@
 
 **WPROWADZENIE**
 
-Projekt strony internetowej, którego celem jest odtwarzanie HTTP Live Streaming.
+Repozytorium zawiera projekt strony internetowej, którego celem było odtwarzanie HTTP Live Streaming. Projekt zrealizowano w ramach przedmiotu uniwersyteckiego "Multimedia Information Processing and Communications".
 
 **TECHNOLOGIE**
 
-- bibliteka hls.js - bibliteka JavaScript implementująca klienta HLS. Do odtwarzania wykorzystuje HTML5 video oraz MediaSource Extensions.
+- bibliteka hls.js - bibliteka JavaScript implementująca klienta HLS. Do odtwarzania wykorzystuje HTML5 video oraz MediaSource Extensions
 - HTML
 - JavaScript
 - CSS
@@ -34,5 +34,3 @@ Uruchomienie strony możliwe poprzez dwukrotne kliknięcie w index.html. Strona 
 - 'video codec'
 - 'audio codec'
 5. Wyświetlanie adresów URL 'on-the-fly'
-
-
