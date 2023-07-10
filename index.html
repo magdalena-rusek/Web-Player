@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pl">
+	<head> 
+		<meta charset="utf-8" />
+		<title>Web Player</title>
+		<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script> 
+		<link rel="stylesheet" href="style.css" type="text/css"/>
+	</head>
+
+	<body onload="playDefaultVideo()">
+	
+		<div id="container">
+			<h3>Web Player - Magdalena Rusek</h3>
+			
+			<div>
+				<video id="video" controls autoplay muted="muted""></video>
+			</div>
+			
+			<br/><br/>	
+			<div id="lista">
+				<b>Choose video from list:</b>
+				<br/>
+				<select id="videoSelection" onchange="changeVideo()">
+				<option value="0">Video 1</option>
+				<option value="1">Video 2</option>  
+				<option value="2">Video 3</option>  
+				<option value="3">Video 4</option>  
+				<option value="4">Video 5</option>  
+				</select>
+			</div>
+				
+			<br/>	
+			<div id="urlEnter"> 
+				<b>OR</b>
+				<br/><br/>
+				<b>Enter your own video url:</b>
+				<br/>
+				<input  id="urlAddress" placeholder="Enter URL address"> 
+				<button id="submit" onclick="changeVideoUrl()">OK</button>
+			</div>	
+				
+			<br/>		
+			<b>Choose level/quality:</b>
+			<div id="levelSelection"></div>
+						
+			<br/>					
+			<b>Video Information:</b>
+			<table id="information" >
+				<tr>
+					<td><b>Bitrate:</b></td>
+					<td style="background-color: #a9a9a9;"></td>
+				</tr>
+				<tr>
+					<td><b>Height:</b></td>
+					<td style="background-color: #a9a9a9;"></td>
+				</tr>
+				<tr>
+					<td><b>Width:</b></td>
+					<td style="background-color: #a9a9a9;"></td>
+				</tr>
+				<tr>
+					<td><b>Video codec:</b></td>
+					<td style="background-color: #a9a9a9;"></td>
+				</tr>
+				<tr>
+					<td><b>Audio codec:</b></td>
+					<td style="background-color: #a9a9a9;"></td>
+				</tr>
+			</table>
+		
+			<br/>	
+			<b>All URLs requested by the player 'on-the-fly':</b>
+			<br/>
+			<div id="urlOnTheFly"></div>
+			
+		</div>
+		
+		<div id="footer">
+			Web player &copy; 2020
+		</div>
+		
+		<script type="text/javascript">
+
+			var video = document.getElementById('video');
+			var levelSelect = document.getElementById('levelSelection')
+			var allUrls = document.getElementById('urlOnTheFly');
+			var hls;
+
+			const videoList = [
+				'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+				'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8',
+				'https://bitmovin-a.akamaihd.net/content/playhouse-vr/m3u8s/105560.m3u8',
+				'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8',
+				'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8']
+
+			function playDefaultVideo(){
+				loadVideo(videoList[0]);
+			}
+
+			function changeVideo(){
+				var nrVideo = document.getElementById("videoSelection").value;
+				loadVideo(videoList[nrVideo]);
+			}		
+			
+			function changeVideoUrl(){
+				var inputUrl = document.getElementById('urlAddress').value;		
+				loadVideo(inputUrl);
+			}
+			
+			function hlsManifestLoaded(event, data){	
+				while(levelSelect.firstChild && levelSelect.removeChild(levelSelect.firstChild));
+				data.levels.forEach(addLevelButton);
+			}
+			
+			function addLevelButton(level, index){	
+				//console.log(level)
+				var levelButton = document.createElement("BUTTON");
+				levelButton.value = index; 
+				levelButton.addEventListener("click", chooseLevel);
+				levelButton.innerHTML = index + "(" + level.bitrate + ")";
+				levelSelect.appendChild(levelButton);
+				console.log(level.bitrate);
+				levelButton.classList.add('button');	
+				levelButton.style.color = "white";				
+			}
+			
+			function chooseLevel()
+			{
+				index = this.value;
+				hls.loadLevel = index;
+				hls.currentLevel = index;
+			}
+			
+			function hlsLevelSwitched(event, data){		
+				displayInformation(0, hls.levels[data.level].bitrate);
+				displayInformation(1, hls.levels[data.level].height);
+				displayInformation(2, hls.levels[data.level].width);
+				displayInformation(3, hls.levels[data.level].videoCodec);
+				displayInformation(4, hls.levels[data.level].audioCodec);		
+			}
+			
+			function displayInformation(row, value){
+				document.getElementById("information").rows[row].cells[1].innerHTML = value;
+			}			
+			
+			function hlsFragParsed(event, data)
+			{	
+				var urlText = document.createTextNode(data.frag.url+"br");
+				allUrls.appendChild(urlText);
+			}
+			
+			function loadVideo(videoSrc){
+				if (Hls.isSupported()) {
+					hls = new Hls();
+					hls.loadSource(videoSrc);
+					hls.attachMedia(video);
+					hls.on(Hls.Events.MANIFEST_PARSED, function() {
+					video.play();
+					});
+
+					while(allUrls.firstChild && allUrls.removeChild(allUrls.firstChild));
+					hls.on(Hls.Events.MANIFEST_LOADED, hlsManifestLoaded);
+					hls.on(Hls.Events.LEVEL_SWITCHED, hlsLevelSwitched);
+					hls.on(Hls.Events.FRAG_PARSED, hlsFragParsed);
+				} 
+				else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+					video.src = videoSrc;
+					video.addEventListener('loadedmetadata', function() {
+					video.play();
+					});
+				}
+			}
+    </script>
+  </body>
+</html>
